@@ -1,0 +1,20 @@
+# Performs an upstream/fast-forward merge of the dev branch in to the qa branch
+#   - this is typically done at the end of a sprint, to release all new features in to the QA environment
+
+name: "Merge upstream: dev -> qa"
+run-name: "Merge upstream: dev -> qa"
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  
+  merge-dev-to-qa:
+    uses: ./.github/workflows/merge-upstream.yml
+    with:
+      target_branch: qa
+    secrets: inherit

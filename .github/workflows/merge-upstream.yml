@@ -1,0 +1,75 @@
+# This is a reusable workflow for performing upstream/fast-forward merges
+#  - you must use "secrets: inherit" when calling this workflow, to ensure that the necessary secrets are available
+
+name: "Merge upstream (shared)"
+
+on:
+  workflow_call:
+    inputs:
+      target_branch:
+        description: 'The target branch to merge to (must be "qa" or "master")'
+        required: true
+        type: string
+
+permissions:
+  pull-requests: write
+  contents: write
+
+env:
+  CAN_MERGE: "false"
+  SOURCE_BRANCH: ${{ inputs.target_branch == 'master' && 'qa' || 'dev' }}
+  JENKINS_VERSION_RESET_JOB: ${{ inputs.target_branch == 'master' && 'Reset-Version-Master' || 'Reset-Version-QA' }}
+  START_SHA: ""       # will be set to the SHA for the destination branch, before the merge
+  END_SHA: ""         # will be set to the SHA for the destination branch, after the merge
+
+jobs:
+  
+  merge-upstream:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check for invalid target branch
+        if: ${{ inputs.target_branch != 'qa' && inputs.target_branch != 'master' }}
+        run: |
+          echo "::error title=Invalid target branch::The target branch '${{ inputs.target_branch }}' is invalid for an upstream merge. The target branch must be either 'qa' or 'master'."
+          exit 1
+
+      - uses: actions/checkout@v4.2.2
+        with:
+          ref: ${{ inputs.target_branch }}
+      
+      - name: Fetch source branch
+        run: git fetch origin ${{env.SOURCE_BRANCH}}:${{env.SOURCE_BRANCH}} --no-tags
+
+      - name: Check if the branches can be merged
+        id: checkMerge
+        run: |
+          SOURCE_HASH=$(git rev-parse ${{ env.SOURCE_BRANCH }})
+          DEST_HASH=$(git rev-parse ${{ inputs.target_branch }})
+          echo "CAN_MERGE=$(test $SOURCE_HASH != $DEST_HASH && git merge-base --is-ancestor $DEST_HASH $SOURCE_HASH && echo "true" || echo "false")" >> $GITHUB_ENV
+          echo "START_SHA=$DEST_HASH" >> $GITHUB_ENV
+          echo "END_SHA=$SOURCE_HASH" >> $GITHUB_ENV
+
+      - name: Write notice to log when branches cannot be merged
+        if: env.CAN_MERGE != 'true'
+        run: echo "::notice::The ${{ env.SOURCE_BRANCH }} branch cannot be merged into the ${{ inputs.target_branch }} branch. The branches have either been merged already, or ${{ inputs.target_branch }} is not an ancestor of ${{ env.SOURCE_BRANCH }}."
+
+      - name: Merge (fast-forward)
+        if: env.CAN_MERGE == 'true'
+        run: |
+          git merge --ff-only ${{ env.SOURCE_BRANCH }}
+          git push
+          
+      - name: 'Trigger repository dispatch "merge" event'
+        if: env.CAN_MERGE == 'true'
+        run: |
+          gh api /repos/{owner}/{repo}/dispatches \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -f "event_type=merge-${{ inputs.target_branch }}" \
+            -F "client_payload[source_branch]=${{ env.SOURCE_BRANCH }}" \
+            -F "client_payload[dest_branch]=${{ inputs.target_branch }}" \
+            -F "client_payload[start_sha]=${{ env.START_SHA }}" \
+            -F "client_payload[end_sha]=${{ env.END_SHA }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
