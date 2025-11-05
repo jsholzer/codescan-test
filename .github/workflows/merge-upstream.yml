@@ -56,10 +56,10 @@ jobs:
 
       - name: 'Create pull request and wait for required checks'
         run: |
-          PR_URL=$(gh pr list --base qa --head dev --label "merge for release" --json "url" --jq ".[0].url")
+          PR_URL=$(gh pr list --base ${{ inputs.target_branch }} --head ${{ env.SOURCE_BRANCH }} --label "merge for release" --json "url" --jq ".[0].url")
 
           if [ "$PR_URL" = "" ]; then
-            PR_URL=$(gh pr create --base qa --head dev --title "Merge dev to qa for upcoming release" --label "merge for release" --fill)
+            PR_URL=$(gh pr create --base ${{ inputs.target_branch }} --head ${{ env.SOURCE_BRANCH }} --title "Merge ${{ env.SOURCE_BRANCH }} to ${{ inputs.target_branch }} for upcoming release" --label "merge for release" --fill)
           fi
 
           echo "### Associated pull request" >> $GITHUB_STEP_SUMMARY
