@@ -55,6 +55,8 @@ jobs:
         run: echo "::notice::The ${{ env.SOURCE_BRANCH }} branch cannot be merged into the ${{ inputs.target_branch }} branch. The branches have either been merged already, or ${{ inputs.target_branch }} is not an ancestor of ${{ env.SOURCE_BRANCH }}."
 
       - name: 'Create pull request and wait for required checks'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           PR_URL=$(gh pr list --base ${{ inputs.target_branch }} --head ${{ env.SOURCE_BRANCH }} --label "merge for release" --json "url" --jq ".[0].url")
 
