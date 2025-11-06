@@ -65,6 +65,7 @@ jobs:
       - name: 'Create pull request and wait for required checks'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        shell: bash {0}  # this prevents bash script from exiting immediately for intermediate errors
         run: |
           PR_URL=$(gh pr list --base ${{ inputs.target_branch }} --head ${{ env.SOURCE_BRANCH }} --label "merge for release" --json "url" --jq ".[0].url")
 
@@ -77,9 +78,7 @@ jobs:
 
           # wait for required checks to be available (up to 15 tries, with 3s wait between tries)
           for i in {1..15}; do
-            gh pr checks $PR_URL --required 2>&1
-            CHECK_OUTPUT=$(gh pr checks $PR_URL --required 2>&1)
-            echo "Output from 'gh pr checks': $CHECK_OUTPUT"
+            CHECK_OUTPUT=$(gh pr checks $PR_URL --required 2>&1)     
 
             if [[ "$CHECK_OUTPUT" =~ ^no(\ required)?\ checks\ reported.* ]]; then
               if [ $i -eq 15 ]; then exit 1; fi
