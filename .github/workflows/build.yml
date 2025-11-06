@@ -1,9 +1,6 @@
 name: Build
 run-name: "Build (branch: ${{ github.ref_name }})"
 
-permissions:
-  contents: read
-
 on:
   push:
     branches: [ main, qa ]
