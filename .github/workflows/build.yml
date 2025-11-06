@@ -1,0 +1,20 @@
+name: Build
+
+on:
+  push:
+    branches: [ main, qa ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Write message to workflow summary
+        run: |
+          echo "## Build notification" >> $GITHUB_STEP_SUMMARY
+          echo "Repository: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "This workflow was triggered by a push to ${{ github.ref_name }}." >> $GITHUB_STEP_SUMMARY
