@@ -40,8 +40,6 @@ jobs:
         with:
           app-id: ${{ secrets.TEST_MERGE_APP_ID }}
           private-key: ${{ secrets.TEST_MERGE_APP_PRIVATE_KEY }}
-          permission-pull-requests: write
-          permission-contents: write
 
       - uses: actions/checkout@v4.2.2
         with:
@@ -80,7 +78,7 @@ jobs:
           # wait for required checks to be available (up to 15 tries, with 3s wait between tries)
           for i in {1..15}; do
             CHECK_OUTPUT=$(gh pr checks $PR_URL --required 2>&1)
-            
+
             if [[ "$CHECK_OUTPUT" =~ ^no(\ required)?\ checks\ reported.* ]]; then
               if [ $i -eq 15 ]; then exit 1; fi
               echo "Required checks are not yet available. Waiting for 3s and trying again."
@@ -92,6 +90,11 @@ jobs:
           done
           
           gh pr checks "$PR_URL" --required --watch
+
+          if ($? != 0); then
+            echo "::error title=Required checks failed::One or more required checks failed for the pull request '$PR_URL'"
+            exit 1
+          fi
 
       - name: Merge (fast-forward)
         if: env.CAN_MERGE == 'true'
