@@ -91,7 +91,7 @@ jobs:
           
           gh pr checks "$PR_URL" --required --watch
 
-          if ($? != 0); then
+          if [ $? -ne 0 ]; then
             echo "::error title=Required checks failed::One or more required checks failed for the pull request '$PR_URL'"
             exit 1
           fi
