@@ -76,8 +76,9 @@ jobs:
 
           echo "### Associated pull request" >> $GITHUB_STEP_SUMMARY
           echo "$PR_URL" >> $GITHUB_STEP_SUMMARY
+          echo "`$PR_URL`" >> $GITHUB_STEP_SUMMARY
 
-          sleep 10s
+          sleep 20s
           gh pr checks "$PR_URL" --required --watch
 
       - name: Merge (fast-forward)
