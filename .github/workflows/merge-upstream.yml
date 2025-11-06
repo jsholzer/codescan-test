@@ -76,7 +76,6 @@ jobs:
 
           echo "### Associated pull request" >> $GITHUB_STEP_SUMMARY
           echo "$PR_URL" >> $GITHUB_STEP_SUMMARY
-          echo "`$PR_URL`" >> $GITHUB_STEP_SUMMARY
 
           # wait for required checks to be available (up to 15 tries, with 3s wait between tries)
           for i in {1..15}; do
