@@ -1,5 +1,8 @@
 name: Build
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ main, qa ]
@@ -9,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Write message to workflow summary
         run: |
           echo "## Build notification" >> $GITHUB_STEP_SUMMARY
