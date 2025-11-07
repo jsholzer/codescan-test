@@ -43,7 +43,7 @@ jobs:
       - name: Merge to qa
         if: ${{ inputs.source_branch == 'master' }}
         run: |
-          git fetch origin master:master --no-tags
+          # git fetch origin master:master --no-tags
           git fetch origin qa:qa --no-tags
           git switch qa
           git merge master --no-edit
