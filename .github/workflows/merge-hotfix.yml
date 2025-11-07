@@ -53,11 +53,11 @@ jobs:
           git fetch origin qa:qa --no-tags
           git switch qa
           git merge master --no-edit
-          git push
+          git push --set-upstream origin qa
 
       - name: Merge to dev
         run: |
           git fetch origin dev:dev --no-tags
           git switch dev
           git merge qa --no-edit
-          git push
+          git push --set-upstream origin dev
