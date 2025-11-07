@@ -41,6 +41,11 @@ jobs:
           show-progress: true
           fetch-depth: 0
           fetch-tags: false
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "CCIQ Merge Bot"
+          git config --global user.email "dev@chroniccareiq.com"
       
       - name: Merge to qa
         if: ${{ inputs.source_branch == 'master' }}
