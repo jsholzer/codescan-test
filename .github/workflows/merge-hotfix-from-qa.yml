@@ -1,0 +1,14 @@
+name: Merge Hotfix from QA
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  merge-hotfix:
+    uses: ./.github/workflows/merge-hotfix.yml
+    secrets: inherit
+    with:
+      source_branch: qa

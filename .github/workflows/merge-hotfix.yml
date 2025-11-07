@@ -1,7 +1,8 @@
-# This is a reusable workflow for performing upstream/fast-forward merges
+# This is a reusable workflow for performing downstream merges following a hotfix applied to either the "qa" or "master" branch.
 #  - you must use "secrets: inherit" when calling this workflow, to ensure that the necessary secrets are available
 
 name: "Merge hotfix to downstream branches"
+description: "Merges a hotfix that was applied to the \"qa\" or \"master\" to the appropriate downstream branches (i.e., \"dev\" and/or \"qa\")"
 
 on:
   workflow_call:
@@ -23,7 +24,7 @@ jobs:
       - name: Check for invalid target branch
         if: ${{ inputs.source_branch != 'qa' && inputs.source_branch != 'master' }}
         run: |
-          echo "::error title=Invalid target branch::The target branch '${{ inputs.source_branch }}' is invalid for an upstream merge. The target branch must be either 'qa' or 'master'."
+          echo "::error title=Invalid source branch::The source branch '${{ inputs.source_branch }}' is invalid for a hotfix (downstream) merge. The source branch must be either 'qa' or 'master'."
           exit 1
 
       - name: Get app token
