@@ -42,14 +42,14 @@ jobs:
       - name: Merge to qa
         if: ${{ inputs.source_branch == 'master' }}
         run: |
-          git pull origin qa --no-tags
+          git fetch origin qa:qa --no-tags
           git switch qa
           git merge master --no-edit
           git push
 
       - name: Merge to dev
         run: |
-          git pull origin dev --no-tags
+          git fetch origin dev:dev --no-tags
           git switch dev
           git merge qa --no-edit
           git push
