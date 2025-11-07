@@ -16,7 +16,7 @@ on:
   # push:
   #   branches: [ "main" ]
   pull_request:
-    branches: [ "main", "qa" ]
+    branches: [ "main", "master", "qa" ]
   # schedule:
   #   - cron: '18 21 * * 0'
 
