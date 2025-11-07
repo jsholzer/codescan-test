@@ -1,0 +1,54 @@
+# This is a reusable workflow for performing upstream/fast-forward merges
+#  - you must use "secrets: inherit" when calling this workflow, to ensure that the necessary secrets are available
+
+name: "Merge hotfix to downstream branches"
+
+on:
+  workflow_call:
+    inputs:
+      source_branch:
+        description: 'The source branch where the hotfix was applied (must be "qa" or "master")'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  
+  merge-down:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check for invalid target branch
+        if: ${{ inputs.source_branch != 'qa' && inputs.source_branch != 'master' }}
+        run: |
+          echo "::error title=Invalid target branch::The target branch '${{ inputs.source_branch }}' is invalid for an upstream merge. The target branch must be either 'qa' or 'master'."
+          exit 1
+
+      - name: Get app token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.TEST_MERGE_APP_ID }}
+          private-key: ${{ secrets.TEST_MERGE_APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v4.2.2
+        with:
+          ref: ${{ inputs.source_branch }}
+          token: ${{ steps.app-token.outputs.token }}
+      
+      - name: Merge to qa
+        if: ${{ inputs.source_branch == 'master' }}
+        run: |
+          git pull origin qa --no-tags
+          git switch qa
+          git merge master --no-edit
+          git push
+
+      - name: Merge to dev
+        run: |
+          git pull origin dev --no-tags
+          git switch dev
+          git merge qa --no-edit
+          git push
